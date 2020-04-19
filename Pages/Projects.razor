@@ -1,0 +1,121 @@
+﻿@using Portfolio.Services
+@using Portfolio.Models 
+
+@inject GitHubService GitHubService
+
+<div class="card text-center">
+    <div class="card-header">
+        <h2><code>Projects</code></h2>
+    </div>
+    <div class="card-body">
+        @if (isLoadingRepositories)
+        {
+            <div class="spinner-border text-info" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        }
+        else if (projectRepositories is null || projectRepositories.Count is 0)
+        {
+            <p>No projects found :(</p>
+        }
+        else
+        {
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Latest Commit</th>
+                        <th scope="col">Author</th>
+                        <th scope="col">Message</th>
+                        <th scope="col">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var projectRepository in projectRepositories)
+                    {
+                        <tr>
+                            <td><a href="@projectRepository.RepositoryLink" target="_blank">@projectRepository.Name</a></td>
+                            <td><a href="@projectRepository.CommitLink" target="_blank">@projectRepository.Sha</a></td>
+                            <td>@projectRepository.Author</td>
+                            <td>@projectRepository.Message</td>
+                            <td>@projectRepository.CommitDate?.ToShortDateString()</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@code {
+
+    private IList<RepositoryViewModel>? projectRepositories;
+
+    private bool isLoadingRepositories = true;
+
+    // Helper enumeration for my retrieving my repos
+    private enum Repositories
+    {
+        Dappery,
+        Brewdude,
+        BrewdudeAngular,
+        BudgetPeeker,
+        OpenRedding,
+        ReddingSalaryPeeperAPI,
+        ReddingSalaryPeeperSPA
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var repositories = await GitHubService.GetRepositories();
+
+        // Grab the selected repositories from the repositories enum (discard the out value, don't need it)
+        var selectedReposities = repositories.Where(r => Enum.TryParse<Repositories>(r.Name, true, out var _));
+
+        if (selectedReposities.Any())
+        {
+            projectRepositories = new List<RepositoryViewModel>();
+
+            foreach (var repository in selectedReposities)
+            {
+                var commitsLink = repository.CommitsUrl;
+
+                if (string.IsNullOrWhiteSpace(commitsLink))
+                {
+                    Console.WriteLine($"No commit link found for repository {repository.Name}");
+                    return;
+                }
+
+                // Remove the {/sha} appended to the link, since we want the full list
+                var trimmedLink = commitsLink.Remove(commitsLink.Length - "{/sha}".Length);
+
+                // Retrieve the commits
+                var commits = await GitHubService.GetRepositoryCommits(repository.Name ?? "Repository name not found", new Uri(trimmedLink));
+
+                // Get the first commit, latest by default
+                var latestCommit = commits.FirstOrDefault();
+
+
+                // Add the commit meta data to the view model
+                var repositoryMeta = new RepositoryViewModel(
+                    repository.Name ?? "Name not available",
+                    repository.HtmlUrl is null ? "https://github.com/joey32793" : repository.HtmlUrl.AbsoluteUri,
+                    string.IsNullOrWhiteSpace(latestCommit.Sha) ? "SHA Not Available" : latestCommit.Sha.Substring(0, 8),
+                    latestCommit.Commit?.Message ?? "Commit message not available",
+                    latestCommit.Commit?.Author?.Name ?? "Author not available",
+                    latestCommit.HtmlUrl is null ? "Link not available" : latestCommit.HtmlUrl.AbsoluteUri,
+                    latestCommit.Commit?.Author?.Date.DateTime
+                );
+
+                projectRepositories.Add(repositoryMeta);
+            }
+
+            // Sort by latest commit date
+            projectRepositories = projectRepositories
+                .OrderByDescending(r => r.CommitDate)
+                .ToList();
+        }
+
+        isLoadingRepositories = false;
+    }
+} 

@@ -22,6 +22,8 @@ namespace Portfolio.Services
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
         }
 
+        public static IList<RepositoryViewModel>? ProjectRepositoryCache { get; set; }
+
         public async Task<IEnumerable<GitHubRepository>> GetRepositories()
         {
             Console.WriteLine("Retrieve user root...");

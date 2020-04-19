@@ -62,58 +62,77 @@
         BudgetPeeker,
         OpenRedding,
         ReddingSalaryPeeperAPI,
-        ReddingSalaryPeeperSPA
+        ReddingSalaryPeeperSPA,
+        BlazorPortfolio
     }
 
     protected override async Task OnInitializedAsync()
     {
-        var repositories = await GitHubService.GetRepositories();
-
-        // Grab the selected repositories from the repositories enum (discard the out value, don't need it)
-        var selectedReposities = repositories.Where(r => Enum.TryParse<Repositories>(r.Name, true, out var _));
-
-        if (selectedReposities.Any())
+        if (GitHubService.ProjectRepositoryCache != null)
         {
-            projectRepositories = new List<RepositoryViewModel>();
+            Console.WriteLine("Cache found");
+            projectRepositories = GitHubService.ProjectRepositoryCache;
+            return;
+        }
 
-            foreach (var repository in selectedReposities)
+        try
+        {
+            var repositories = await GitHubService.GetRepositories();
+
+            // Grab the selected repositories from the repositories enum (discard the out value, don't need it)
+            var selectedReposities = repositories.Where(r => Enum.TryParse<Repositories>(r.Name, true, out var _));
+
+            if (selectedReposities.Any())
             {
-                var commitsLink = repository.CommitsUrl;
+                projectRepositories = new List<RepositoryViewModel>();
 
-                if (string.IsNullOrWhiteSpace(commitsLink))
+                foreach (var repository in selectedReposities)
                 {
-                    Console.WriteLine($"No commit link found for repository {repository.Name}");
-                    return;
+                    var commitsLink = repository.CommitsUrl;
+
+                    if (string.IsNullOrWhiteSpace(commitsLink))
+                    {
+                        Console.WriteLine($"No commit link found for repository {repository.Name}");
+                        return;
+                    }
+
+                    // Remove the {/sha} appended to the link, since we want the full list
+                    var trimmedLink = commitsLink.Remove(commitsLink.Length - "{/sha}".Length);
+
+                    // Retrieve the commits
+                    var commits = await GitHubService.GetRepositoryCommits(repository.Name ?? "Repository name not found", new Uri(trimmedLink));
+
+                    // Get the first commit, latest by default
+                    var latestCommit = commits.FirstOrDefault();
+
+                    // Add the commit meta data to the view model
+                    var repositoryMeta = new RepositoryViewModel(
+                        repository.Name ?? "Name not available",
+                        repository.HtmlUrl is null ? "https://github.com/joey32793" : repository.HtmlUrl.AbsoluteUri,
+                        string.IsNullOrWhiteSpace(latestCommit.Sha) ? "SHA Not Available" : latestCommit.Sha.Substring(0, 8),
+                        latestCommit.Commit?.Message ?? "Commit message not available",
+                        latestCommit.Commit?.Author?.Name ?? "Author not available",
+                        latestCommit.HtmlUrl is null ? "Link not available" : latestCommit.HtmlUrl.AbsoluteUri,
+                        latestCommit.Commit?.Author?.Date.DateTime
+                    );
+
+                    projectRepositories.Add(repositoryMeta);
                 }
 
-                // Remove the {/sha} appended to the link, since we want the full list
-                var trimmedLink = commitsLink.Remove(commitsLink.Length - "{/sha}".Length);
+                // Sort by latest commit date
+                projectRepositories = projectRepositories
+                    .OrderByDescending(r => r.CommitDate)
+                    .ToList();
 
-                // Retrieve the commits
-                var commits = await GitHubService.GetRepositoryCommits(repository.Name ?? "Repository name not found", new Uri(trimmedLink));
-
-                // Get the first commit, latest by default
-                var latestCommit = commits.FirstOrDefault();
-
-
-                // Add the commit meta data to the view model
-                var repositoryMeta = new RepositoryViewModel(
-                    repository.Name ?? "Name not available",
-                    repository.HtmlUrl is null ? "https://github.com/joey32793" : repository.HtmlUrl.AbsoluteUri,
-                    string.IsNullOrWhiteSpace(latestCommit.Sha) ? "SHA Not Available" : latestCommit.Sha.Substring(0, 8),
-                    latestCommit.Commit?.Message ?? "Commit message not available",
-                    latestCommit.Commit?.Author?.Name ?? "Author not available",
-                    latestCommit.HtmlUrl is null ? "Link not available" : latestCommit.HtmlUrl.AbsoluteUri,
-                    latestCommit.Commit?.Author?.Date.DateTime
-                );
-
-                projectRepositories.Add(repositoryMeta);
+                // Set the cache
+                GitHubService.ProjectRepositoryCache = projectRepositories;
             }
 
-            // Sort by latest commit date
-            projectRepositories = projectRepositories
-                .OrderByDescending(r => r.CommitDate)
-                .ToList();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Could not load project repositories: {e.Message}");
+            projectRepositories = new List<RepositoryViewModel>();
         }
 
         isLoadingRepositories = false;

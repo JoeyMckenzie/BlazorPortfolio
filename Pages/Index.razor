@@ -7,11 +7,29 @@
     <div class="py-3">
         <Stack />
     </div>
+    @if (enableGitHubProjects)
+    {
+        <div class="py-3">
+            <Projects />
+        </div>
+    }
     <div class="py-3">
-        <Projects />
+        <Articles />
     </div>
     <div class="py-3">
         <Connect />
     </div>
+
+    <hr class="py-1" />
+
+    <div class="text-center">
+        Joey Mckenzie - @DateTime.Today.ToLongDateString() - Built on <a href="https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor" target="_blank">Blazor</a>
+    </div>
+
 </div>
 
+@code {
+
+    private bool enableGitHubProjects = true;
+
+}

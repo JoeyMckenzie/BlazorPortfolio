@@ -1,0 +1,36 @@
+﻿@using Portfolio.Services
+@using Portfolio.Models
+
+@inject GitHubService GitHubService
+
+<div class="card text-center">
+    <div class="card-header">
+        <h2><code>Articles</code></h2>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <tbody>
+                @foreach (var post in BlogPosts)
+                {
+                    <tr>
+                        <td><a href="@post.Url" target="_blank">@post.Title</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+
+    private IEnumerable<BlogPostViewModel> BlogPosts = BlogPostService.GetBlogPosts();
+
+    protected override void OnInitialized()
+    {
+        // Sort posts by date
+        BlogPosts = BlogPosts
+            .OrderByDescending(p => p.Published)
+            .ToList();
+    }
+
+} 

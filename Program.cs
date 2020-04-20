@@ -15,7 +15,6 @@ namespace Portfolio
 
             builder.Services.AddBaseAddressHttpClient();
             builder.Services.TryAddScoped<GitHubService>();
-            builder.Services.TryAddScoped<SendGridService>();
 
             await builder.Build().RunAsync();
         }

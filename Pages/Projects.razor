@@ -25,9 +25,9 @@
                     <tr>
                         <th scope="col">Name</th>
                         <th scope="col">Latest Commit</th>
-                        <th scope="col">Author</th>
-                        <th scope="col">Message</th>
-                        <th scope="col">Date</th>
+                        <th scope="col" class="d-none d-md-table-cell">Author</th>
+                        <th scope="col" class="d-none d-md-table-cell">Message</th>
+                        <th scope="col" class="d-none d-md-table-cell">Date</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -36,9 +36,9 @@
                         <tr>
                             <td><a href="@projectRepository.RepositoryLink" target="_blank">@projectRepository.Name</a></td>
                             <td><a href="@projectRepository.CommitLink" target="_blank">@projectRepository.Sha</a></td>
-                            <td>@projectRepository.Author</td>
-                            <td>@projectRepository.Message</td>
-                            <td>@projectRepository.CommitDate?.ToShortDateString()</td>
+                            <td class="d-none d-md-table-cell">@projectRepository.Author</td>
+                            <td class="d-none d-md-table-cell">@projectRepository.Message</td>
+                            <td class="d-none d-md-table-cell">@projectRepository.CommitDate?.ToShortDateString()</td>
                         </tr>
                     }
                 </tbody>

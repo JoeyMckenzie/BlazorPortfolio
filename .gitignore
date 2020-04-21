@@ -22,3 +22,4 @@ logs/
 /.editorconfig
 *.csproj.user
 *.DotSettings.user
+/build/

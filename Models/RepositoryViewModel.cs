@@ -15,18 +15,18 @@ namespace Portfolio.Models
             CommitDate = commitDate;
         }
 
-        public string Name { get; set; }
+        public string Name { get; }
 
-        public string RepositoryLink { get; set; }
+        public string RepositoryLink { get; }
 
-        public string Sha { get; set; }
+        public string Sha { get; }
 
-        public string Message { get; set; }
+        public string Message { get; }
 
-        public string Author { get; set; }
+        public string Author { get; }
 
-        public string CommitLink { get; set; }
+        public string CommitLink { get; }
 
-        public DateTime? CommitDate { get; set; }
+        public DateTime? CommitDate { get; }
     }
 }

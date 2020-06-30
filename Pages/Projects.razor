@@ -58,12 +58,10 @@
     {
         Dappery,
         Brewdude,
-        BrewdudeAngular,
-        BudgetPeeker,
         OpenRedding,
-        ReddingSalaryPeeperAPI,
-        ReddingSalaryPeeperSPA,
-        BlazorPortfolio
+        BlazorPortfolio,
+        BlazorConduit,
+        StateManagementWithFluxor,
     }
 
     protected override async Task OnInitializedAsync()
@@ -80,13 +78,13 @@
             var repositories = await GitHubService.GetRepositories();
 
             // Grab the selected repositories from the repositories enum (discard the out value, don't need it)
-            var selectedReposities = repositories.Where(r => Enum.TryParse<Repositories>(r.Name, true, out var _));
+            var selectedRepositories = repositories.Where(r => Enum.TryParse<Repositories>(r.Name, true, out var _) || string.Equals(r.Name, "realword-dotnet-clean-architecture"));
 
-            if (selectedReposities.Any())
+            if (selectedRepositories.Any())
             {
                 projectRepositories = new List<RepositoryViewModel>();
 
-                foreach (var repository in selectedReposities)
+                foreach (var repository in selectedRepositories)
                 {
                     var commitsLink = repository.CommitsUrl;
 

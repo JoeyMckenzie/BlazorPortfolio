@@ -7,7 +7,6 @@ pool:
 variables:
   buildConfiguration: 'Release'
   clientProjectPath: '$(Build.SourcesDirectory)/Portfolio.csproj'
-  clientProjectDist: '$(Build.SourcesDirectory)/dist'
 
 steps:
 # Use the SDK version in global.json  
@@ -52,6 +51,6 @@ steps:
   displayName: 'Install netlify-cli'
 
 # Deploy the wwwroot directory from the distribution folder
-- script: npx netlify deploy --prod --dir $(Build.StagingDirectory)/dist/wwwroot --site $(netlifySiteId) --auth $(netlifyApiKey)
+- script: npx netlify deploy --prod --dir $(Build.StagingDirectory)/dist/s/wwwroot --site $(netlifySiteId) --auth $(netlifyApiKey)
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   displayName: 'Deploy project to Netlify'

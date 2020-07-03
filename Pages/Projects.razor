@@ -106,7 +106,7 @@
                     // Add the commit meta data to the view model
                     var repositoryMeta = new RepositoryViewModel(
                         repository.Name ?? "Name not available",
-                        repository.HtmlUrl is null ? "https://github.com/joey32793" : repository.HtmlUrl.AbsoluteUri,
+                        repository.HtmlUrl is null ? "https://github.com/JoeyMckenzie" : repository.HtmlUrl.AbsoluteUri,
                         string.IsNullOrWhiteSpace(latestCommit.Sha) ? "SHA Not Available" : latestCommit.Sha.Substring(0, 8),
                         latestCommit.Commit?.Message ?? "Commit message not available",
                         latestCommit.Commit?.Author?.Name ?? "Author not available",
